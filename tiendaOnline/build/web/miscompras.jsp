@@ -24,7 +24,7 @@
     <body>
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
             <div class="container-fluid">
-                <img src=https://www.toptechegypt.com/ibm/img/TOPTECH-logo.png title="User Image" alt="User image" style="width: 230px; height: 60px" />
+                <img src=https://www.toptechegypt.com/ibm/img/TOPTECH-logo.png title="User Image" alt="User image" style="width: 230px; height: 80px" />
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <span class="navbar-toggler-icon"></span>
                 </button>
