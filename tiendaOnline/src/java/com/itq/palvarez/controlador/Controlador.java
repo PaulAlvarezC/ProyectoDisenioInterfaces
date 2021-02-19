@@ -45,7 +45,7 @@ public class Controlador extends HttpServlet {
     List<Carrito> listaCarrito = new ArrayList<>();
     CompraDAO dao;
     ClienteDAO clienteDao = new ClienteDAO();
-    int item;
+    int item = 0;
     double totalPagar = 0.0;
     double iva = 0.0;
     double subTotal = 0.0;
@@ -53,6 +53,8 @@ public class Controlador extends HttpServlet {
     int idp;
     Carrito car;
     String userEmail;
+    Boolean isStock;
+    int sizeCarrito = 0;
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
      * methods.
@@ -72,19 +74,36 @@ public class Controlador extends HttpServlet {
                 int pos = 0;
                 cantidad = 1;
                 idp = Integer.parseInt(request.getParameter("id"));
-                p = pdao.listarId(idp);
-                if(listaCarrito.size() > 0){
-                    for (int i = 0; i < listaCarrito.size(); i++) {
-                        if(idp == listaCarrito.get(i).getIdProducto()){
-                            pos = i;
+                pdao = new ProductoDAO();
+                isStock = pdao.stockDisponible(idp);
+                System.out.println("STOCK: " + isStock);
+                if(isStock){
+                    p = pdao.listarId(idp);
+                    if(listaCarrito.size() > 0){
+                        for (int i = 0; i < listaCarrito.size(); i++) {
+                            if(idp == listaCarrito.get(i).getIdProducto()){
+                                pos = i;
+                            }
                         }
-                    }
-                    if(idp == listaCarrito.get(pos).getIdProducto()){
-                        cantidad = listaCarrito.get(pos).getCantidad() + cantidad;
-                        double subtotal = listaCarrito.get(pos).getPrecioCompra() * cantidad;
-                        listaCarrito.get(pos).setCantidad(cantidad);
-                        listaCarrito.get(pos).setSubTotal(subtotal);
-                    }else {
+                        if(idp == listaCarrito.get(pos).getIdProducto()){
+                            cantidad = listaCarrito.get(pos).getCantidad() + cantidad;
+                            double subtotal = listaCarrito.get(pos).getPrecioCompra() * cantidad;
+                            listaCarrito.get(pos).setCantidad(cantidad);
+                            listaCarrito.get(pos).setSubTotal(subtotal);
+                        }else {
+                            item = item + 1;
+                            car = new Carrito();
+                            car.setItem(item);
+                            car.setIdProducto(p.getId());
+                            car.setNombres(p.getNombres());
+                            car.setDescripcion(p.getDescripcion());
+                            car.setPrecioCompra(p.getPrecio());
+                            car.setCantidad(cantidad);
+                            car.setSubTotal(cantidad * p.getPrecio());
+                            car.setRuta(p.getRuta());
+                            listaCarrito.add(car);
+                        }
+                    }else{
                         item = item + 1;
                         car = new Carrito();
                         car.setItem(item);
@@ -97,22 +116,13 @@ public class Controlador extends HttpServlet {
                         car.setRuta(p.getRuta());
                         listaCarrito.add(car);
                     }
+
+                    sizeCarrito = listaCarrito.size();
+                    request.setAttribute("contador", sizeCarrito);                    
+                    request.getRequestDispatcher("Controlador?accion=home").forward(request, response);
                 }else{
-                    item = item + 1;
-                    car = new Carrito();
-                    car.setItem(item);
-                    car.setIdProducto(p.getId());
-                    car.setNombres(p.getNombres());
-                    car.setDescripcion(p.getDescripcion());
-                    car.setPrecioCompra(p.getPrecio());
-                    car.setCantidad(cantidad);
-                    car.setSubTotal(cantidad * p.getPrecio());
-                    car.setRuta(p.getRuta());
-                    listaCarrito.add(car);
+                    request.getRequestDispatcher("errorStock.jsp").forward(request, response);
                 }
-                
-                request.setAttribute("contador", listaCarrito.size());
-                request.getRequestDispatcher("Controlador?accion=home").forward(request, response);
                 break;
             case "Delete":
                 int idproducto = Integer.parseInt(request.getParameter("idp"));
@@ -141,48 +151,48 @@ public class Controlador extends HttpServlet {
                 }
                 iva = totalPagar * 0.12;
                 subTotal = totalPagar - iva;
+                sizeCarrito = listaCarrito.size();
                 request.setAttribute("iva", iva);
                 request.setAttribute("totalPagar", totalPagar);
                 request.setAttribute("subtotal", subTotal);
+                request.setAttribute("contador", sizeCarrito); 
                 request.getRequestDispatcher("carrito.jsp").forward(request, response);
                 break;
             case "Comprar":
                 idp = Integer.parseInt(request.getParameter("id"));
                 p = pdao.listarId(idp);
-                item = item + 1;
-                car = new Carrito();
-                car.setItem(item);
-                car.setIdProducto(p.getId());
-                car.setNombres(p.getNombres());
-                car.setDescripcion(p.getDescripcion());
-                car.setPrecioCompra(p.getPrecio());
-                car.setCantidad(cantidad);
-                car.setSubTotal(cantidad * p.getPrecio());
-                car.setRuta(p.getRuta());
-                listaCarrito.add(car);
-                for (int i = 0; i < listaCarrito.size(); i++) {
-                    totalPagar = totalPagar + listaCarrito.get(i).getSubTotal();
+                pdao = new ProductoDAO();
+                isStock = pdao.stockDisponible(idp);
+                System.out.println("STOCK: " + isStock);
+                item = 0;
+                if(isStock){
+                    item = item + 1;
+                    car = new Carrito();
+                    car.setItem(item);
+                    car.setIdProducto(p.getId());
+                    car.setNombres(p.getNombres());
+                    car.setDescripcion(p.getDescripcion());
+                    car.setPrecioCompra(p.getPrecio());
+                    car.setCantidad(cantidad);
+                    car.setSubTotal(cantidad * p.getPrecio());
+                    car.setRuta(p.getRuta());
+                    listaCarrito.add(car);
+                    for (int i = 0; i < listaCarrito.size(); i++) {
+                        totalPagar = totalPagar + listaCarrito.get(i).getSubTotal();
+                    }
+                    iva = totalPagar * 0.12;
+                    subTotal = totalPagar - iva;
+                    request.setAttribute("iva", iva);
+                    request.setAttribute("totalPagar", totalPagar);
+                    request.setAttribute("subtotal", subTotal);
+                    request.setAttribute("contador", listaCarrito.size());
+                    request.setAttribute("carrito", listaCarrito);
+                    request.getRequestDispatcher("carrito.jsp").forward(request, response);
+                }else{
+                    request.getRequestDispatcher("errorStock.jsp").forward(request, response);
                 }
-                iva = totalPagar * 0.12;
-                subTotal = totalPagar - iva;
-                request.setAttribute("iva", iva);
-                request.setAttribute("totalPagar", totalPagar);
-                request.setAttribute("subtotal", subTotal);
-                request.setAttribute("contador", listaCarrito.size());
-                request.setAttribute("carrito", listaCarrito);
-                request.getRequestDispatcher("carrito.jsp").forward(request, response);
                 break;
             case "GenerarCompra":
-                String cardName = request.getParameter("cardName");
-                String cardNumber = request.getParameter("cardNumber");
-                String cardDate = request.getParameter("cardDate");
-                String cardCode = request.getParameter("cardCode");
-                System.out.println("CARD DATA: " + cardName + " " + cardNumber + " " + cardDate + " " + cardCode);
-                boolean cardIsSaving;
-                cardIsSaving = clienteDao.datosTarjeta(cardName, cardNumber, cardDate, cardCode);
-                if(cardIsSaving){
-                    System.out.println("CARD DATA SAVE...");
-                }
                 HttpSession objsesionUs = request.getSession(true);
                 userEmail = String.valueOf(objsesionUs.getAttribute("usuario"));
                 System.out.println("USERMAIL: " + userEmail);
@@ -198,11 +208,24 @@ public class Controlador extends HttpServlet {
                 int res = dao.GenerarCompra(compra);
                 System.out.println("COMPRA RES: " + res);
                 System.out.println("TOTAL: " + totalPagar);
+                System.out.println("SIZE CARRITO: " + listaCarrito.size());
                 if(res != 0 && totalPagar > 0){
-                    request.getRequestDispatcher("confirmacion.jsp").forward(request, response);                    
-                    for (int i = 0; i < listaCarrito.size(); i++) {
-                        listaCarrito.remove(i);
+                    listaCarrito.clear();
+                    sizeCarrito = listaCarrito.size();
+                    System.out.println("SIZE CARRITO: " + listaCarrito.size());
+                    request.setAttribute("contador", sizeCarrito); 
+                    String cardName = request.getParameter("cardName");
+                    String cardNumber = request.getParameter("cardNumber");
+                    String cardDate = request.getParameter("cardDate");
+                    String cardCode = request.getParameter("cardCode");
+                    System.out.println("CARD DATA: " + cardName + " " + cardNumber + " " + cardDate + " " + cardCode);
+                    boolean cardIsSaving;
+                    cardIsSaving = clienteDao.datosTarjeta(cardName, cardNumber, cardDate, cardCode);
+                    if(cardIsSaving){
+                        System.out.println("CARD DATA SAVE...");
                     }
+                    item = 0;
+                    request.getRequestDispatcher("confirmacion.jsp").forward(request, response);                    
                 }else {
                     request.getRequestDispatcher("errorStock.jsp").forward(request, response);
                 }
@@ -214,6 +237,7 @@ public class Controlador extends HttpServlet {
                 request.getRequestDispatcher("register.jsp").forward(request, response);
                 break;
             case "AgregarProducto":
+                request.setAttribute("contador", sizeCarrito);  
                 request.getRequestDispatcher("agregarProducto.jsp").forward(request, response);
                 break;
             case "GuardarProducto":
@@ -257,6 +281,7 @@ public class Controlador extends HttpServlet {
                 System.out.println("ID CLIENTE: " + idClient);
                 compras = cdao.listar(idClient);
                 request.setAttribute("compras", compras);
+                request.setAttribute("contador", sizeCarrito);  
                 request.getRequestDispatcher("miscompras.jsp").forward(request, response);
                 break;
             case "CerrarSesion":
@@ -275,12 +300,15 @@ public class Controlador extends HttpServlet {
                 objsesionPr.setAttribute("pdireccion", clis.getDireccion());
                 objsesionPr.setAttribute("pemail", userEmail);
                 objsesionPr.setAttribute("ppassword", clis.getPassword());
+                request.setAttribute("contador", sizeCarrito);  
                 request.getRequestDispatcher("profile.jsp").forward(request, response);
                 break;
             case "verOfertas":
+                request.setAttribute("contador", sizeCarrito);  
                 request.getRequestDispatcher("ofertas.jsp").forward(request, response);
                 break;
             default:
+                request.setAttribute("contador", sizeCarrito); 
                 request.setAttribute("productos", productos);
                 request.getRequestDispatcher("index.jsp").forward(request, response);
         }

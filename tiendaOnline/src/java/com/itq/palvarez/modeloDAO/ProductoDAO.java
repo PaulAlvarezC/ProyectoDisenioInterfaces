@@ -15,6 +15,7 @@ import java.io.OutputStream;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
@@ -28,6 +29,11 @@ public class ProductoDAO {
     Conexion cn = new Conexion();
     PreparedStatement ps;
     ResultSet rs;
+    
+    String sql;
+    String sqlUpdate;
+    int cantidadProducto;
+    Producto p = new Producto();
     
     public Producto listarId(int id){
         String sql = "select * from producto where idProducto=" + id;
@@ -150,5 +156,25 @@ public class ProductoDAO {
             System.err.println("ERROR: " + e);
         } 
         return lista;
+    }
+    
+    public Boolean stockDisponible(int idProduct) throws SQLException{
+        sqlUpdate = "select * from producto where idProducto = " + idProduct;
+        ps = getConnection().prepareStatement(sqlUpdate);
+        rs = ps.executeQuery();
+        while(rs.next()){
+            p.setId(rs.getInt(1));
+            p.setNombres(rs.getString(2));
+            p.setFoto(rs.getBinaryStream(3));
+            p.setDescripcion(rs.getString(4));
+            p.setPrecio(rs.getDouble(5));
+            p.setStock(rs.getInt(6));
+            cantidadProducto = p.getStock();                    
+            System.out.println("STOCK: " + cantidadProducto);                    
+        }
+        if(cantidadProducto > 0){
+            return true;
+        }
+        return false;
     }
 }
