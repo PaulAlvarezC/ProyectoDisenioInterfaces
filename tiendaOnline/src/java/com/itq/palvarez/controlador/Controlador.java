@@ -15,8 +15,11 @@ import com.itq.palvarez.modeloDAO.CompraDAO;
 import com.itq.palvarez.modeloDAO.ProductoDAO;
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -58,9 +61,10 @@ public class Controlador extends HttpServlet {
      * @param response servlet response
      * @throws ServletException if a servlet-specific error occurs
      * @throws IOException if an I/O error occurs
+     * @throws java.sql.SQLException
      */
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
+            throws ServletException, IOException, SQLException {
         String accion = request.getParameter("accion");
         productos = pdao.listar();        
         switch (accion) {
@@ -169,6 +173,16 @@ public class Controlador extends HttpServlet {
                 request.getRequestDispatcher("carrito.jsp").forward(request, response);
                 break;
             case "GenerarCompra":
+                String cardName = request.getParameter("cardName");
+                String cardNumber = request.getParameter("cardNumber");
+                String cardDate = request.getParameter("cardDate");
+                String cardCode = request.getParameter("cardCode");
+                System.out.println("CARD DATA: " + cardName + " " + cardNumber + " " + cardDate + " " + cardCode);
+                boolean cardIsSaving;
+                cardIsSaving = clienteDao.datosTarjeta(cardName, cardNumber, cardDate, cardCode);
+                if(cardIsSaving){
+                    System.out.println("CARD DATA SAVE...");
+                }
                 HttpSession objsesionUs = request.getSession(true);
                 userEmail = String.valueOf(objsesionUs.getAttribute("usuario"));
                 System.out.println("USERMAIL: " + userEmail);
@@ -284,7 +298,11 @@ public class Controlador extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (SQLException ex) {
+            Logger.getLogger(Controlador.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
@@ -298,7 +316,11 @@ public class Controlador extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        processRequest(request, response);
+        try {
+            processRequest(request, response);
+        } catch (SQLException ex) {
+            Logger.getLogger(Controlador.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**

@@ -91,7 +91,7 @@
                                 <div class="input-group mb-3"> 
                                     <input type="text" class="form-control" value="<% out.println(direccion); %>" name="direccion" placeholder="Direccion" aria-label="Direccion" aria-describedby="basic-addon1" required>
                                 </div>
-                                <input type="submit" class="btn btn-primary" value="Guardar"/>                             
+                                <input type="submit" class="btn btn-primary" value="Guardar"/>
                             </div>
                         </form>
                     </div>

@@ -107,21 +107,34 @@
                         </div>
                         <div class="card-body">
                             <label>SubTotal:</label>
-                            <input type="text" value="$ ${subtotal}0" readonly="" class="form-control"/>
-                            <label>Descuento:</label>
-                            <input type="text" value="$ 0.00" readonly="" class="form-control"/>
+                            <input type="text" value="$ ${subtotal}0" readonly="" class="form-control"/>                            
                             <label>IVA (12%):</label>
                             <input type="text" value="$ ${iva}0" readonly="" class="form-control"/>
                             <label>Total a Pagar:</label>
                             <input type="text" value="$ ${totalPagar}0" readonly="" class="form-control"/>
-                        </div>
-                        <div class="card-footer">
-                            <center>
-                                <a href="Controlador?accion=GenerarCompra" class="btn btn-success btn-block">Realizar Pago</a>
-                            </center>
+                            <div class="card-header">
+                                <h3>Realizar el Pago</h3>
+                            </div>
+                            <form action="Controlador?accion=GenerarCompra" method="post">
+                                <div class="input-group mb-3">                        
+                                    <input type="text" class="form-control" name="cardName" placeholder="Nombre de Tarjeta" required>
+                                </div>
+                                <div class="input-group mb-3">                        
+                                    <input type="number" maxlength="16" class="form-control" name="cardNumber" placeholder="Número de Tarjeta" required>
+                                </div>
+                                <div class="input-group mb-3">                        
+                                    <input type="text" class="form-control" name="cardDate" placeholder="Fecha Caducidad" required>
+                                </div>
+                                <div class="input-group mb-2"> 
+                                    <input type="password" maxlength="3" class="form-control" name="cardCode" placeholder="CVV" required>
+                                </div> 
+                                <center>
+                                    <input type="submit" class="btn btn-success btn-block" value="Realizar Pago"/>
+                                </center>                                
+                            </form>
                         </div>
                     </div>
-                </div>
+                </div>                
             </div>
         </div>
         <script src="https://code.jquery.com/jquery-3.5.0.min.js"></script>
